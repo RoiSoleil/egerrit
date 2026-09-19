@@ -47,8 +47,6 @@ import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.browser.ProgressAdapter;
 import org.eclipse.swt.browser.ProgressEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -56,7 +54,9 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
@@ -70,9 +70,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Editor showing the web UI of the Gerrit server for a change.
  * <p>
- * The web UI is displayed in an embedded browser. A small Eclipse button is injected next to the files so that they
- * can be opened in the Eclipse editor. If the change is not checked out in the workspace, the user is asked to check
- * it out before the file is opened.
+ * The web UI is displayed in an embedded browser. A small Eclipse button is injected next to the files so that they can
+ * be opened in the Eclipse editor. If the change is not checked out in the workspace, the user is asked to check it out
+ * before the file is opened.
  *
  * @since 1.4
  */
@@ -164,15 +164,19 @@ public class WebUIEditor extends EditorPart {
 				//Nothing to do
 			}
 		});
-		//Mouse buttons 8 and 9 are the "previous" and "next" buttons of the mouse. The
-		//browser widget does not handle them by default: use them to navigate in the history
-		fBrowser.addMouseListener(new MouseAdapter() {
+		//The "previous" and "next" buttons of the mouse are not handled by the browser
+		//widget: use them to navigate in the history. The event must be cancelled
+		//(doit = false) so that SWT claims it and does not propagate it to the parent
+		//widgets, where the workbench would switch the editors.
+		fBrowser.addListener(SWT.MouseDown, new Listener() {
 			@Override
-			public void mouseDown(MouseEvent event) {
+			public void handleEvent(Event event) {
 				if (contains(MOUSE_PREVIOUS_BUTTONS, event.button)) {
+					event.doit = false;
 					logger.debug("Previous mouse button pressed, going back"); //$NON-NLS-1$
 					fBrowser.back();
 				} else if (contains(MOUSE_NEXT_BUTTONS, event.button)) {
+					event.doit = false;
 					logger.debug("Next mouse button pressed, going forward"); //$NON-NLS-1$
 					fBrowser.forward();
 				}
@@ -248,8 +252,8 @@ public class WebUIEditor extends EditorPart {
 	}
 
 	private String getLogoDataUrl() {
-		try (InputStream stream = FileLocator.openStream(EGerritUIPlugin.getDefault().getBundle(),
-				new Path(LOGO_PATH), false)) {
+		try (InputStream stream = FileLocator.openStream(EGerritUIPlugin.getDefault().getBundle(), new Path(LOGO_PATH),
+				false)) {
 			return "data:image/png;base64," + Base64.getEncoder().encodeToString(stream.readAllBytes()); //$NON-NLS-1$
 		} catch (IOException e) {
 			return ""; //$NON-NLS-1$
@@ -296,8 +300,7 @@ public class WebUIEditor extends EditorPart {
 	 */
 	private RevisionInfo findRevision(GerritWebLink webLink) throws EGerritException {
 		ChangeInfo change = fChangeInfo;
-		if (change.getRevision() == null
-				|| !webLink.getChangeNumber().equals(Integer.toString(change.get_number()))) {
+		if (change.getRevision() == null || !webLink.getChangeNumber().equals(Integer.toString(change.get_number()))) {
 			GetChangeCommand command = fGerritClient.getChange(webLink.getChangeNumber());
 			command.addOption(ChangeOption.ALL_REVISIONS);
 			command.addOption(ChangeOption.ALL_FILES);
@@ -326,10 +329,8 @@ public class WebUIEditor extends EditorPart {
 		if (isActiveRevision(revision)) {
 			return true;
 		}
-		boolean checkout = MessageDialog.openQuestion(getSite().getShell(),
-				Messages.WebUIEditor_checkoutTitle,
-				NLS.bind(Messages.WebUIEditor_checkoutMessage,
-						Integer.toString(revision.getChangeInfo().get_number()),
+		boolean checkout = MessageDialog.openQuestion(getSite().getShell(), Messages.WebUIEditor_checkoutTitle,
+				NLS.bind(Messages.WebUIEditor_checkoutMessage, Integer.toString(revision.getChangeInfo().get_number()),
 						Integer.toString(revision.get_number())));
 		if (!checkout) {
 			return false;

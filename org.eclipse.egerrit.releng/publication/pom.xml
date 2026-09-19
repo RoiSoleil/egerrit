@@ -46,9 +46,9 @@
 					<appArgLine>-application org.eclipse.ant.core.antRunner -buildfile composite-repo.xml p2.composite.add -Dsite.composite.name=${repoName} -Dsource.repository=${repoSource} -Dtarget.repository=${repoTarget} -Dtarget.child.repository.relativePath=${repoChildName}</appArgLine>
 					<repositories>
 						<repository>
-							<id>luna</id>
+							<id>2026-09</id>
 							<layout>p2</layout>
-							<url>http://download.eclipse.org/releases/luna</url>
+							<url>https://download.eclipse.org/releases/2026-09</url>
 						</repository>
 					</repositories>
 					<dependencies>

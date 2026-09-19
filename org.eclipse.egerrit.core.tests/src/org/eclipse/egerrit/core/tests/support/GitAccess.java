@@ -28,7 +28,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.egerrit.core.tests.Common;
-import org.eclipse.egit.core.Activator;
 import org.eclipse.egit.core.RepositoryUtil;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CheckoutResult;
@@ -199,7 +198,12 @@ public class GitAccess {
 		Authenticator.setDefault(null);
 		String refSpec = "HEAD:refs/for/master";
 		if (draft) {
-			refSpec = "HEAD:refs/drafts/master";
+			if (Common.SUPPORTS_DRAFT_CHANGES) {
+				refSpec = "HEAD:refs/drafts/master";
+			} else {
+				//Draft changes do not exist anymore: create a work-in-progress change instead
+				refSpec = "HEAD:refs/for/master%wip";
+			}
 		}
 		CredentialsProvider creds = new UsernamePasswordCredentialsProvider(Common.USER, Common.PASSWORD);
 		Iterable<PushResult> result = fGit.push()
@@ -273,7 +277,7 @@ public class GitAccess {
 	 * Add git repo to the list of repositories known by egit
 	 */
 	public void addToGitView() {
-		RepositoryUtil repoUtil = Activator.getDefault().getRepositoryUtil();
+		RepositoryUtil repoUtil = RepositoryUtil.INSTANCE;
 		repoUtil.addConfiguredRepository(fGit.getRepository().getDirectory());
 	}
 
@@ -284,7 +288,7 @@ public class GitAccess {
 		if (fGit == null) {
 			return;
 		}
-		RepositoryUtil repoUtil = Activator.getDefault().getRepositoryUtil();
+		RepositoryUtil repoUtil = RepositoryUtil.INSTANCE;
 		repoUtil.removeDir(fGit.getRepository().getDirectory());
 	}
 
@@ -374,7 +378,7 @@ public class GitAccess {
 	 * Get the current branch from egit
 	 */
 	public String getCurrentBranch() {
-		RepositoryUtil repoUtil = Activator.getDefault().getRepositoryUtil();
+		RepositoryUtil repoUtil = RepositoryUtil.INSTANCE;
 		String branch = null;
 		try {
 			branch = repoUtil.getShortBranch(fGit.getRepository());
@@ -397,7 +401,7 @@ public class GitAccess {
 			command = gitRepo.checkout();
 			command.setCreateBranch(true);
 			command.setName(branchName);
-			command.setForce(false);
+			command.setForced(false);
 			command.call();
 		} catch (Throwable t) {
 			if (command != null) {

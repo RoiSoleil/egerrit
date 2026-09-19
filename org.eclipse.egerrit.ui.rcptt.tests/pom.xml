@@ -44,10 +44,10 @@
 		</pluginRepository>
 	</pluginRepositories>
 	<properties>
-		<rcptt-maven-version>2.1.0</rcptt-maven-version>
+		<rcptt-maven-version>2.8.1</rcptt-maven-version>
 		<!-- To make tests run faster, you can replace this URL by path of a file 
 			on the local filesystem -->
-		<base-aut>http://download.eclipse.org/eclipse/downloads/drops4/R-4.6.3-201703010400/eclipse-SDK-4.6.3-linux-gtk-x86_64.tar.gz</base-aut>
+		<base-aut>https://download.eclipse.org/eclipse/downloads/drops4/R-4.41-202609011200/eclipse-SDK-4.41-linux-gtk-x86_64.tar.gz</base-aut>
 	</properties>
 
 	<build>
@@ -91,7 +91,7 @@
 						<explicit>${base-aut}</explicit>
 						<injections>
 							<injection>
-								<site>http://download.eclipse.org/releases/oxygen</site>
+								<site>https://download.eclipse.org/releases/2026-09</site>
 								<features>
 									<feature>org.eclipse.egit.feature.group</feature>
 									<feature>org.eclipse.jgit.feature.group</feature>
@@ -113,7 +113,7 @@
 								</features>
 							</injection>
 							<injection>
-								<site>http://download.eclipse.org/tools/orbit/downloads/drops/R20150821153341/repository/</site>
+								<site>https://download.eclipse.org/releases/2026-09</site>
 								<features>
 									<feature>org.slf4j.api</feature>
 									<feature>org.apache.commons.lang3</feature>

@@ -18,7 +18,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jgit;bundle-version="4.0.0",
  org.eclipse.core.resources;bundle-version="3.8.1",
  org.apache.httpcomponents.httpclient,
- org.slf4j.api;bundle-version="1.7.2",
+ slf4j.api;bundle-version="2.0.0",
  org.eclipse.egit.ui;bundle-version="4.6.0",
  org.eclipse.swt,
  org.eclipse.text;bundle-version="3.5.200",
@@ -39,7 +39,7 @@ Require-Bundle: org.eclipse.ui,
  org.apache.httpcomponents.httpcore;bundle-version="4.3.3",
  org.eclipse.ui.navigator;bundle-version="3.6.100"
 Bundle-Vendor: %Bundle-Vendor
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Export-Package: org.eclipse.egerrit.internal.process,
  org.eclipse.egerrit.internal.ui,

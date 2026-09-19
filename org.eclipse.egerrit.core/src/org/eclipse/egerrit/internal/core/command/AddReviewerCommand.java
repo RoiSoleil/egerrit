@@ -46,7 +46,8 @@ public class AddReviewerCommand extends BaseCommandChangeWithInput<AddReviewerRe
 	protected boolean handleHttpException(ClientProtocolException exception) throws EGerritException {
 		if (exception instanceof HttpResponseException) {
 			HttpResponseException httpException = (HttpResponseException) exception;
-			if (httpException.getStatusCode() == 422) {
+			//Gerrit 2.x returns 422 while Gerrit 3.x returns 400 when the reviewer cannot be found
+			if (httpException.getStatusCode() == 422 || httpException.getStatusCode() == 400) {
 				EGerritException gerritException = new EGerritException(exception.getLocalizedMessage());
 				gerritException.setCode(EGerritException.SHOWABLE_MESSAGE);
 				throw gerritException;

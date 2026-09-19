@@ -26,7 +26,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.9</version>
+				<version>3.6.2</version>
 				<executions>
 					<execution>
 						<id>attach-artifacts</id>
@@ -37,16 +37,10 @@
 						<configuration>
 							<artifacts>
 								<artifact>
-									<file>eGerrit-Eclipse_4.4-luna.target</file>
+									<file>eGerrit-Eclipse_4.41.target</file>
 									<type>target</type>
-									<classifier>eGerrit-Eclipse_4.4-luna</classifier>
+									<classifier>eGerrit-Eclipse_4.41</classifier>
 								</artifact>
-								<artifact>
-									<file>eGerrit-Eclipse_4.6-neon.target</file>
-									<type>target</type>
-									<classifier>eGerrit-Eclipse_4.6-neon</classifier>
-								</artifact>
-								<!-- More targets could be added here -->
 							</artifacts>
 						</configuration>
 					</execution>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?><target name="eGerrit-Eclipse_4.41" sequenceNumber="1">
+<locations>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.license.feature.group" version="0.0.0"/>
+<repository location="https://download.eclipse.org/cbi/updates/license/1.0.1.v20140414-1359"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.swt.tools" version="0.0.0"/>
+<unit id="org.eclipse.sdk.ide" version="0.0.0"/>
+<unit id="org.eclipse.emf.sdk.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.jgit.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.swtbot.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.swtbot.ide.feature.group" version="0.0.0"/>
+<unit id="org.eclipse.swtbot.generator.feature.feature.group" version="0.0.0"/>
+<unit id="com.google.gson" version="0.0.0"/>
+<unit id="org.apache.commons.lang3" version="0.0.0"/>
+<unit id="org.apache.commons.commons-codec" version="0.0.0"/>
+<unit id="slf4j.api" version="0.0.0"/>
+<unit id="org.apache.httpcomponents.httpclient" version="0.0.0"/>
+<unit id="org.apache.httpcomponents.httpcore" version="0.0.0"/>
+<unit id="com.ibm.icu" version="0.0.0"/>
+<repository location="https://download.eclipse.org/releases/2026-09/"/>
+</location>
+<location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
+<unit id="org.eclipse.rcptt.ecl.core" version="0.0.0"/>
+<unit id="org.eclipse.rcptt.ecl.parser" version="0.0.0"/>
+<unit id="org.eclipse.rcptt.ecl.dispatch" version="0.0.0"/>
+<repository location="https://download.eclipse.org/rcptt/release/2.8.1/repository"/>
+</location>
+</locations>
+<targetJRE path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21"/>
+</target>

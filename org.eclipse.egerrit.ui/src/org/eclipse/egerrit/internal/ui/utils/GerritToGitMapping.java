@@ -167,13 +167,11 @@ public class GerritToGitMapping {
 	}
 
 	private static RepositoryCache getRepositoryCache() {
-		org.eclipse.egit.core.Activator egit = org.eclipse.egit.core.Activator.getDefault();
-		return egit.getRepositoryCache();
+		return RepositoryCache.INSTANCE;
 	}
 
 	private static RepositoryUtil getRepositoryUtil() {
-		org.eclipse.egit.core.Activator egit = org.eclipse.egit.core.Activator.getDefault();
-		return egit.getRepositoryUtil();
+		return RepositoryUtil.INSTANCE;
 	}
 
 	private static String cleanLeadingSlash(String path) {

@@ -31,7 +31,6 @@ import org.eclipse.core.databinding.observable.value.ComputedValue;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.property.Properties;
 import org.eclipse.core.databinding.property.value.IValueProperty;
-import org.eclipse.core.internal.databinding.property.value.SelfValueProperty;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -81,7 +80,7 @@ import org.eclipse.emf.edit.ui.provider.AdapterFactoryContentProvider;
 import org.eclipse.emf.edit.ui.provider.AdapterFactoryLabelProvider;
 import org.eclipse.jface.databinding.swt.ISWTObservable;
 import org.eclipse.jface.databinding.swt.ISWTObservableValue;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
+import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider;
 import org.eclipse.jface.databinding.viewers.ViewerSupport;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -991,7 +990,7 @@ public class DetailsTabView {
 		ObservableListContentProvider contentProvider = new ObservableListContentProvider();
 		tableReviewersViewer.setContentProvider(contentProvider);
 		final IObservableMap[] watchedProperties = Properties.observeEach(contentProvider.getKnownElements(),
-				new IValueProperty[] { new SelfValueProperty<String>("x"), //$NON-NLS-1$
+				new IValueProperty[] { Properties.selfValue("x"), //$NON-NLS-1$
 						EMFProperties.value(ModelPackage.Literals.REVIEWER_INFO__NAME),
 						EMFProperties.value(ModelPackage.Literals.REVIEWER_INFO__EMAIL),
 						EMFProperties.value(ModelPackage.Literals.REVIEWER_INFO__DELETEABLE) });

@@ -28,7 +28,7 @@ import org.eclipse.egerrit.internal.ui.editors.ModelLoader;
 import org.eclipse.egerrit.internal.ui.tabs.ObservableCollector;
 import org.eclipse.egerrit.internal.ui.utils.Messages;
 import org.eclipse.emf.databinding.EMFProperties;
-import org.eclipse.jface.databinding.swt.WidgetProperties;
+import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;

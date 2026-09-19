@@ -47,7 +47,7 @@ public class ListReviewersCommandTest extends CommandTestWithSimpleReview {
 		ListReviewersCommand command = fGerrit.getReviewers(change_id);
 		try {
 			ReviewerInfo[] result = command.call();
-			assertEquals(user, result[0].getName());
+			assertEquals(user, result[0].getUsername());
 		} catch (EGerritException e) {
 			fail(e.getMessage());
 		}

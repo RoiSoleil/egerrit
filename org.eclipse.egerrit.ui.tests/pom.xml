@@ -33,6 +33,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd"
 					<useUIThread>true</useUIThread>
 					<product>org.eclipse.sdk.ide</product>
 					<application>org.eclipse.ui.ide.workbench</application>
+					<argLine>${tycho.testArgLine} ${egerrit.test.jvmArgs}</argLine>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -64,7 +65,7 @@ http://maven.apache.org/xsd/maven-4.0.0.xsd"
 						<artifactId>tycho-surefire-plugin</artifactId>
 						<version>${tycho.version}</version>
 						<configuration>
-							<argLine>${tycho.testArgLine} -DEGerritGerritTestServerHost=${EGerritGerritTestServerHost} -DEGerritGerritTestServerPort=${EGerritGerritTestServerPort} -DEGerritUseDefinedProxy=true -Declipse.pluginCustomization=${project.basedir}/../org.eclipse.egerrit.releng/eclipseFoundation-proxy-settings.ini</argLine>
+							<argLine>${tycho.testArgLine} ${egerrit.test.jvmArgs} -DEGerritUseDefinedProxy=true -Declipse.pluginCustomization=${project.basedir}/../org.eclipse.egerrit.releng/eclipseFoundation-proxy-settings.ini</argLine>
 						</configuration>
 					</plugin>
 				</plugins>

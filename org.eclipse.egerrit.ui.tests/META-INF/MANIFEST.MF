@@ -10,7 +10,7 @@ Bundle-Localization: plugin
 Require-Bundle: org.junit;bundle-version="4.11.0",
  org.eclipse.core.runtime,
  org.eclipse.emf.ecore;visibility:=reexport,
- org.eclipse.rcptt.ecl.core;visibility:=reexport,
+ org.eclipse.rcptt.ecl.core;bundle-version="[2.1.0,3.0.0)";visibility:=reexport,
  org.eclipse.ui,
  org.eclipse.compare,
  org.eclipse.egerrit.ui;bundle-version="1.3.0",
@@ -19,11 +19,8 @@ Require-Bundle: org.junit;bundle-version="4.11.0",
  org.eclipse.jface.text;bundle-version="3.8.2",
  org.eclipse.egerrit.dashboard.ui;bundle-version="1.3.0",
  org.eclipse.egerrit.dashboard.core,
- org.apache.log4j;bundle-version="1.2.15";resolution:=optional,
  org.eclipse.egerrit.model;bundle-version="1.3.0",
  org.eclipse.swtbot.eclipse.finder;bundle-version="2.3.0",
- org.eclipse.emf.ecore;visibility:=reexport,
- org.eclipse.rcptt.ecl.core;bundle-version="[2.1.0,3.0.0)";visibility:=reexport,
  org.eclipse.rcptt.ecl.parser;bundle-version="[2.1.0,3.0.0)",
  org.eclipse.rcptt.ecl.dispatch;bundle-version="[2.1.0,3.0.0)",
  org.eclipse.jgit,
@@ -31,12 +28,11 @@ Require-Bundle: org.junit;bundle-version="4.11.0",
  org.eclipse.egerrit.core.tests;bundle-version="1.3.0",
  org.eclipse.egit.core;bundle-version="4.6.0",
  org.eclipse.team.core;bundle-version="3.8.0"
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.eclipse.egerrit.internal.rcptt.support.egerritecl,
  org.eclipse.egerrit.internal.rcptt.support.egerritecl.impl,
  org.eclipse.egerrit.internal.rcptt.support.egerritecl.util
 Bundle-ActivationPolicy: lazy
 Import-Package: org.apache.http;version="4.3.3",
  org.eclipse.egerrit.internal.ui.tabs,
- org.eclipse.jgit.api;version="4.0.0",
- org.eclipse.ui.internal.ide
+ org.eclipse.jgit.api;version="4.0.0"

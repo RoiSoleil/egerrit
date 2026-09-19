@@ -17,6 +17,7 @@ import static org.junit.Assert.fail;
 
 import java.util.Map;
 
+import org.eclipse.egerrit.core.tests.Common;
 import org.eclipse.egerrit.internal.core.command.ListProjectsCommand;
 import org.eclipse.egerrit.internal.core.exception.EGerritException;
 import org.eclipse.egerrit.internal.model.ProjectInfo;
@@ -36,8 +37,7 @@ public class ListProjectsCommandTest extends CommandTestWithSimpleReview {
 		try {
 			Map<String, ProjectInfo> listProjectsResult = listProjectsCommand.call();
 			System.out.println(listProjectsResult);
-			assertNotNull(listProjectsResult.get("egerrit/test"));
-			assertNotNull(listProjectsResult.get("egerrit/RCPTTtest"));
+			assertNotNull(listProjectsResult.get(Common.TEST_PROJECT));
 		} catch (EGerritException e) {
 			fail(e.getMessage());
 		}

@@ -12,6 +12,7 @@
 package org.eclipse.egerrit.ui.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -58,8 +59,16 @@ public class DashboardCompletionTest {
 	public void testProjectCompletion() {
 		SearchContentProposalProvider provider = new SearchContentProposalProvider(null);
 		provider.setGerritClient(fGerrit);
-		IContentProposal[] proposals = provider.getProposals("project:ege", 11); //$NON-NLS-1$
-		assertEquals(2, proposals.length);
+		String projectPrefix = Common.TEST_PROJECT.substring(0, Common.TEST_PROJECT.indexOf('/') + 1);
+		IContentProposal[] proposals = provider
+				.getProposals("project:" + projectPrefix, "project:".length() + projectPrefix.length()); //$NON-NLS-1$
+		boolean found = false;
+		for (IContentProposal proposal : proposals) {
+			if (proposal.getContent().trim().endsWith(Common.TEST_PROJECT)) {
+				found = true;
+			}
+		}
+		assertTrue("The project " + Common.TEST_PROJECT + " should be proposed", found); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	@Test

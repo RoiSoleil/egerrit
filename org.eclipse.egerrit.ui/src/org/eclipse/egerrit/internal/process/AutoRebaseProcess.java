@@ -460,7 +460,7 @@ class AutoRebaseProcess extends Job {
 		try {
 			URIish uri = getRemoteURI();
 			if (uri != null) {
-				fetchRes = new FetchOperationUI(localRepo, uri, patchSpecs, 0, false).execute(subMonitor);
+				fetchRes = new FetchOperationUI(localRepo, uri, patchSpecs, false).execute(subMonitor);
 			} else {
 				return null;
 			}
@@ -516,7 +516,7 @@ class AutoRebaseProcess extends Job {
 		try {
 			URIish uri = getRemoteURI();
 			if (uri != null) {
-				fetchResBranch = new FetchOperationUI(localRepo, uri, branchSpecs, 0, false).execute(subMonitor);
+				fetchResBranch = new FetchOperationUI(localRepo, uri, branchSpecs, false).execute(subMonitor);
 			} else {
 				return false;
 			}

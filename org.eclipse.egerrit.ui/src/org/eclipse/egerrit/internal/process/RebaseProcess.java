@@ -27,6 +27,7 @@ import org.eclipse.egerrit.internal.ui.editors.FindLocalRepository;
 import org.eclipse.egerrit.internal.ui.editors.QueryHelpers;
 import org.eclipse.egerrit.internal.ui.editors.RefreshRelatedEditors;
 import org.eclipse.egerrit.internal.ui.utils.Messages;
+import org.eclipse.egit.core.internal.indexdiff.IndexDiffCache;
 import org.eclipse.egit.core.internal.indexdiff.IndexDiffCacheEntry;
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.ecore.util.EContentAdapter;
@@ -187,9 +188,7 @@ public class RebaseProcess extends Action {
 		Repository repo;
 		repo = new FindLocalRepository(gerritClient, toRebase.getChangeInfo().getProject()).getRepository();
 		if (repo != null) {
-			IndexDiffCacheEntry entry = org.eclipse.egit.core.Activator.getDefault()
-					.getIndexDiffCache()
-					.getIndexDiffCacheEntry(repo);
+			IndexDiffCacheEntry entry = IndexDiffCache.INSTANCE.getIndexDiffCacheEntry(repo);
 
 			RebaseRequestRunnable rebaseRequest = new RebaseRequestRunnable(entry.getIndexDiff().getModified().size());
 			Display.getDefault().syncExec(rebaseRequest);

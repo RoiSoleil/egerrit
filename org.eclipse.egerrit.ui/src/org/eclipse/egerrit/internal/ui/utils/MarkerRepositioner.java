@@ -67,7 +67,7 @@ public class MarkerRepositioner {
 	}
 
 	private AbstractTreeIterator prepareTreeParser(Repository repository, String ref) throws Exception {
-		Ref head = repository.getRef(ref);
+		Ref head = repository.exactRef(ref);
 		try (RevWalk walk = new RevWalk(repository)) {
 			RevCommit commit = walk.parseCommit(head.getObjectId());
 			RevTree tree = walk.parseTree(commit.getTree().getId());

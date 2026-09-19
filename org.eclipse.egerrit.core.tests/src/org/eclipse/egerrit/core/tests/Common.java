@@ -12,6 +12,8 @@
 
 package org.eclipse.egerrit.core.tests;
 
+import org.osgi.framework.Version;
+
 /**
  * Common stuff for the test cases
  *
@@ -23,23 +25,43 @@ public class Common {
 	// ------------------------------------------------------------------------
 	// Constants
 	// ------------------------------------------------------------------------
-	static String initHost() {
-		String host = System.getProperty("EGerritGerritTestServerHost");
-		if (host == null || host.trim().length() == 0) {
-			return "localhost";
+	private static String getProperty(String name, String defaultValue) {
+		String value = System.getProperty(name);
+		if (value == null || value.trim().length() == 0) {
+			return defaultValue;
 		}
-		return host;
+		return value.trim();
+	}
+
+	static String initHost() {
+		return getProperty("EGerritGerritTestServerHost", "localhost");
 	}
 
 	static int initPort() {
-		String port = System.getProperty("EGerritGerritTestServerPort");
-		if (port == null || port.trim().length() == 0) {
-			return 28112;
-		}
-		return Integer.valueOf(port);
+		return Integer.valueOf(getProperty("EGerritGerritTestServerPort", "28112"));
 	}
 
-	public static final String SCHEME = "http";
+	static String initUser() {
+		return getProperty("EGerritGerritTestServerUser", "admin");
+	}
+
+	static String initPassword() {
+		return getProperty("EGerritGerritTestServerPassword", "egerritTest");
+	}
+
+	static String initProject() {
+		return getProperty("EGerritGerritTestServerProject", "egerrit/test");
+	}
+
+	static String initEmail() {
+		return getProperty("EGerritGerritTestServerEmail", "admin@localhost");
+	}
+
+	static String initVersion() {
+		return getProperty("EGerritGerritTestServerVersion", "2.11.5");
+	}
+
+	public static final String SCHEME = getProperty("EGerritGerritTestServerScheme", "http");
 
 	public static final String HOST = initHost();
 
@@ -47,15 +69,37 @@ public class Common {
 
 	public static final String PATH = "";
 
-	public static final String TEST_PROJECT = "egerrit/test";
+	public static final String TEST_PROJECT = initProject();
 
-	public static final String USER = "admin";
+	public static final String USER = initUser();
 
-	public static final String PASSWORD = "egerritTest";
+	public static final String PASSWORD = initPassword();
 
-	public static final String EMAIL = "admin@localhost";
+	public static final String EMAIL = initEmail();
 
-	public static final String GERRIT_VERSION = "2.11.5";
+	public static final String GERRIT_VERSION = initVersion();
 
 	public static final String CHANGES_PATH = PATH + "/changes/";
+
+	/**
+	 * The version of the server under test.
+	 */
+	public static final Version VERSION = Version.parseVersion(GERRIT_VERSION);
+
+	/**
+	 * Gerrit 3.x servers.
+	 */
+	public static final boolean IS_GERRIT_3 = VERSION.getMajor() >= 3;
+
+	/**
+	 * Draft changes were removed in Gerrit 2.16 and replaced by work-in-progress changes. The
+	 * <code>refs/drafts/*</code> refs and the draft change REST endpoints do not exist anymore on
+	 * newer servers.
+	 */
+	public static final boolean SUPPORTS_DRAFT_CHANGES = VERSION.compareTo(new Version(2, 16, 0)) < 0;
+
+	/**
+	 * The user used as a reviewer by the tests.
+	 */
+	public static final String REVIEWER = getProperty("EGerritGerritTestServerReviewer", "test1");
 }

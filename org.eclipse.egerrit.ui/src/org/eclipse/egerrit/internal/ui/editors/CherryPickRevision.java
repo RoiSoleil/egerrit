@@ -37,7 +37,6 @@ import org.eclipse.egerrit.internal.model.RevisionInfo;
 import org.eclipse.egerrit.internal.ui.EGerritUIPlugin;
 import org.eclipse.egerrit.internal.ui.utils.Messages;
 import org.eclipse.egit.ui.JobFamilies;
-import org.eclipse.egit.ui.internal.CommonUtils;
 import org.eclipse.egit.ui.internal.commit.RepositoryCommit;
 import org.eclipse.egit.ui.internal.fetch.FetchOperationUI;
 import org.eclipse.jface.action.Action;
@@ -166,13 +165,13 @@ public class CherryPickRevision extends Action {
 	private boolean invokeEGitCherryPickCommand() {
 		final IStructuredSelection selection = new StructuredSelection(new RepositoryCommit(repo, commit));
 
-		ICommandService commandService = CommonUtils.getService(PlatformUI.getWorkbench(), ICommandService.class);
+		ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
 		Command cmd = commandService.getCommand(EGIT_CHERRY_PICK);
 		if (!cmd.isDefined()) {
 			return false;
 		}
 
-		IHandlerService handlerService = CommonUtils.getService(PlatformUI.getWorkbench(), IHandlerService.class);
+		IHandlerService handlerService = PlatformUI.getWorkbench().getService(IHandlerService.class);
 		EvaluationContext c = null;
 		c = new EvaluationContext(handlerService.createContextSnapshot(false), selection.toList());
 		c.addVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME, selection);
@@ -192,7 +191,7 @@ public class CherryPickRevision extends Action {
 		List<RefSpec> specs = new ArrayList<>(1);
 		specs.add(spec);
 
-		new FetchOperationUI(repo, getRemoteURI(), specs, 0, false).execute(monitor);
+		new FetchOperationUI(repo, getRemoteURI(), specs, false).execute(monitor);
 	}
 
 	private URIish getRemoteURI() {

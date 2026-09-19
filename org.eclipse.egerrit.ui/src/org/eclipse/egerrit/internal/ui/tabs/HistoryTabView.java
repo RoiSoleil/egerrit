@@ -13,7 +13,7 @@ package org.eclipse.egerrit.internal.ui.tabs;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.beans.BeanProperties;
+import org.eclipse.core.databinding.beans.typed.BeanProperties;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.map.IObservableMap;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
@@ -31,7 +31,7 @@ import org.eclipse.egerrit.internal.ui.utils.Messages;
 import org.eclipse.emf.databinding.EMFProperties;
 import org.eclipse.emf.databinding.FeaturePath;
 import org.eclipse.jface.databinding.viewers.ObservableListContentProvider;
-import org.eclipse.jface.databinding.viewers.ViewersObservables;
+import org.eclipse.jface.databinding.viewers.typed.ViewerProperties;
 import org.eclipse.jface.text.hyperlink.IHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -144,8 +144,8 @@ public class HistoryTabView {
 				.setInput(EMFProperties.list(ModelPackage.Literals.CHANGE_INFO__MESSAGES).observe(changeInfo));
 
 		//Hook the selection listener to display the details in the bottom section
-		IObservableValue selection = ViewersObservables.observeSingleSelection(tableHistoryViewer);
-		IObservableValue textViewerDocument = BeanProperties.value(msgTextData.getClass(), "document") //$NON-NLS-1$
+		IObservableValue selection = ViewerProperties.singleSelection().observe(tableHistoryViewer);
+		IObservableValue textViewerDocument = BeanProperties.value(TextViewerWithLinks.class, "document") //$NON-NLS-1$
 				.observe(Realm.getDefault(), msgTextData);
 		UpdateValueStrategy textToDocumentStrategy = new UpdateValueStrategy();
 		textToDocumentStrategy.setConverter(DataConverter.fromStringToDocument(fGerritClient));

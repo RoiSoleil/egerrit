@@ -22,6 +22,7 @@ import org.eclipse.egerrit.internal.core.GerritCredentials;
 import org.eclipse.egerrit.internal.core.GerritFactory;
 import org.eclipse.egerrit.internal.core.GerritRepository;
 import org.eclipse.egerrit.internal.core.Gerrit_2_11;
+import org.eclipse.egerrit.internal.core.Gerrit_3_0;
 import org.eclipse.egerrit.internal.core.exception.EGerritException;
 import org.junit.Test;
 import org.osgi.framework.Version;
@@ -144,7 +145,11 @@ public class GerritFactoryTest {
 
 		// Verify result
 		assertNotNull(gerrit);
-		assertTrue("Wrong gerrit version", gerrit instanceof Gerrit_2_11);
+		if (new Version(Common.GERRIT_VERSION).getMajor() >= 3) {
+			assertTrue("Wrong gerrit version", gerrit instanceof Gerrit_3_0);
+		} else {
+			assertTrue("Wrong gerrit version", gerrit instanceof Gerrit_2_11);
+		}
 	}
 
 }

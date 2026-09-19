@@ -45,7 +45,7 @@ public class AddReviewerCommandTest extends CommandTestWithSimpleReview {
 		AddReviewerResult reviewerCmdResult = null;
 		try {
 			reviewerCmdResult = command.call();
-			assertEquals("test1", reviewerCmdResult.getReviewers().get(0).getName());
+			assertEquals("test1", reviewerCmdResult.getReviewers().get(0).getUsername());
 			assertEquals(false, reviewerCmdResult.getConfirm());
 		} catch (EGerritException e) {
 			fail(e.getMessage());

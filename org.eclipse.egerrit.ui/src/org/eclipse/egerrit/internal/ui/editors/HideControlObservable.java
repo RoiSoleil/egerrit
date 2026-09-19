@@ -16,7 +16,7 @@ import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.databinding.observable.value.WritableValue;
 import org.eclipse.jface.databinding.swt.ISWTObservableValue;
-import org.eclipse.jface.databinding.swt.SWTObservables;
+import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Control;
@@ -51,9 +51,9 @@ class HideControlObservable extends WritableValue implements IValueChangeListene
 		this.control = control;
 
 		UpdateValueStrategy never = new UpdateValueStrategy(UpdateValueStrategy.POLICY_NEVER);
-		bindingContext.bindValue(SWTObservables.observeVisible(control), this, never, null);
+		bindingContext.bindValue(WidgetProperties.visible().observe(control), this, never, null);
 
-		sizeObservable = SWTObservables.observeSize(control);
+		sizeObservable = WidgetProperties.size().observe(control);
 		sizeObservable.addValueChangeListener(this);
 
 		if (!control.isVisible()) {

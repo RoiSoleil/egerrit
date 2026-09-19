@@ -14,6 +14,8 @@ package org.eclipse.egerrit.core.command.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.eclipse.egerrit.core.tests.Common;
@@ -60,14 +62,22 @@ public class CherryPickRevisionCommandTest extends CommandTestWithSimpleReview {
 			fail(e.getMessage());
 		}
 		// when the cherrypick cannot be performed because of an error
-		cherryPickInput.setDestination("HEAD");
+		Version version = new Version(Common.GERRIT_VERSION);
+		if (version.getMajor() >= 3) {
+			//Gerrit 3.x allows cherry-picking to HEAD, so use an invalid destination instead
+			cherryPickInput.setDestination("does-not-exist");
+		} else {
+			cherryPickInput.setDestination("HEAD");
+		}
 		command.setCommandInput(cherryPickInput);
 		try {
 			ChangeInfo result = null;
 			result = command.call();
 			//Before Gerrit 2.12, the return value was null
-			Version version = new Version(Common.GERRIT_VERSION);
-			if (version.getMajor() == 2 && version.getMinor() < 12) {
+			if (version.getMajor() >= 3) {
+				assertNull(result);
+				assertNotNull(command.getFailureReason());
+			} else if (version.getMajor() == 2 && version.getMinor() < 12) {
 				assertEquals(command.getFailureReason(), null);
 			} else {
 				assertEquals(command.getFailureReason(), "Branch HEAD does not exist.\n");

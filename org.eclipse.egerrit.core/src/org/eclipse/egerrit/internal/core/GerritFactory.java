@@ -104,6 +104,9 @@ public final class GerritFactory {
 			case Gerrit_2_11.GERRIT_VERSION:
 				gerrit = new Gerrit_2_11(gerritRepository);
 				break;
+			case Gerrit_3_0.GERRIT_VERSION:
+				gerrit = new Gerrit_3_0(gerritRepository);
+				break;
 
 			default:
 				// Downgrade the version as per logic above

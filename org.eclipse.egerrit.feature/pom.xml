@@ -23,16 +23,21 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.eclipse.tycho.extras</groupId>
-				<artifactId>tycho-source-feature-plugin</artifactId>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-source-plugin</artifactId>
 				<version>${tycho.version}</version>
 				<executions>
 					<execution>
-						<id>source-feature</id>
+						<id>feature-source</id>
 						<phase>package</phase>
 						<goals>
-							<goal>source-feature</goal>
+							<goal>feature-source</goal>
 						</goals>
+						<configuration>
+							<excludes>
+								<plugin id="com.google.gson" />
+							</excludes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -75,6 +80,22 @@
 						<groupId>org.eclipse.tycho</groupId>
 						<artifactId>tycho-p2-plugin</artifactId>
 						<version>${tycho.version}</version>
+					</plugin>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-gpg-plugin</artifactId>
+						<version>${tycho.version}</version>
+						<configuration>
+							<skipIfNoSigningKey>true</skipIfNoSigningKey>
+						</configuration>
+						<executions>
+							<execution>
+								<id>sign-p2-artifacts</id>
+								<goals>
+									<goal>sign-p2-artifacts</goal>
+								</goals>
+							</execution>
+						</executions>
 					</plugin>
 				</plugins>
 			</build>

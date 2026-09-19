@@ -38,20 +38,17 @@
 		<!-- General -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<tycho.version>1.0.0</tycho.version>
+		<tycho.version>5.0.4</tycho.version>
 		<antrun.version>1.8</antrun.version>
-		<cbi.version>1.1.4</cbi.version>
+		<cbi.version>1.5.7</cbi.version>
 		
 		<!-- Target platform -->
 		<egerrit.target.artifact>org.eclipse.egerrit.target</egerrit.target.artifact>
-		<egerrit.target.platform>eGerrit-Eclipse_4.7-oxygen</egerrit.target.platform>
-
-		<!-- set gtk3 version -->
-		<SWT_GTK3>0</SWT_GTK3>
+		<egerrit.target.platform>eGerrit-Eclipse_4.41</egerrit.target.platform>
 
 		<!-- Sonar -->
 		<sonar.language>java</sonar.language>
-		<sonar.java.source>1.8</sonar.java.source>
+		<sonar.java.source>17</sonar.java.source>
 		<sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
 		<sonar.exclusions>**/rcptt/**,**/tests/**,**/test/**,**/Messages*,**/stubs/**,**/model/**,**/EGerritConstants.java,**/core/GerritQuery.java</sonar.exclusions>
 		<sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
@@ -63,9 +60,18 @@
 
 		<!-- Configuration of the Test gerrit server to use for the tests.-->
 		<!-- The default values are specified in the code -->
+		<EGerritGerritTestServerScheme/>
 		<EGerritGerritTestServerHost/>
 		<EGerritGerritTestServerPort/>
+		<EGerritGerritTestServerUser/>
+		<EGerritGerritTestServerPassword/>
+		<EGerritGerritTestServerProject/>
+		<EGerritGerritTestServerEmail/>
+		<EGerritGerritTestServerVersion/>
 		<RCPTTWaitTime/>
+
+		<!-- System properties forwarded to the test JVMs -->
+		<egerrit.test.jvmArgs>-DEGerritGerritTestServerScheme=${EGerritGerritTestServerScheme} -DEGerritGerritTestServerHost=${EGerritGerritTestServerHost} -DEGerritGerritTestServerPort=${EGerritGerritTestServerPort} -DEGerritGerritTestServerUser=${EGerritGerritTestServerUser} -DEGerritGerritTestServerPassword=${EGerritGerritTestServerPassword} -DEGerritGerritTestServerProject=${EGerritGerritTestServerProject} -DEGerritGerritTestServerEmail=${EGerritGerritTestServerEmail} -DEGerritGerritTestServerVersion=${EGerritGerritTestServerVersion}</egerrit.test.jvmArgs>
 	</properties>
 
 	<pluginRepositories>
@@ -107,17 +113,12 @@
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
-							<arch>x86</arch>
+							<arch>x86_64</arch>
 						</environment>
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
-							<arch>x86_64</arch>
-						</environment>
-						<environment>
-							<os>win32</os>
-							<ws>win32</ws>
-							<arch>x86</arch>
+							<arch>aarch64</arch>
 						</environment>
 						<environment>
 							<os>win32</os>
@@ -128,6 +129,11 @@
 							<os>macosx</os>
 							<ws>cocoa</ws>
 							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>aarch64</arch>
 						</environment>
 					</environments>
 				</configuration>
@@ -148,32 +154,9 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.eclipse.tycho.extras</groupId>
-				<artifactId>tycho-source-feature-plugin</artifactId>
-				<version>${tycho.version}</version>
-				<configuration>
-					<includeBinaryFeature>false</includeBinaryFeature>
-				</configuration>
-				<executions>
-					<execution>
-						<id>source-feature</id>
-						<phase>package</phase>
-						<goals>
-							<goal>source-feature</goal>
-						</goals>
-						<configuration>
-							<excludes>
-								<plugin id="com.google.gson" />
-							</excludes>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.7.4.201502262128</version>
+				<version>0.8.15</version>
 				<executions>
 					<execution>
 						<id>pre-test</id>
@@ -194,7 +177,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>1.4.1</version>
+				<version>3.6.3</version>
 				<executions>
 					<execution>
 						<id>enforce-maven</id>
@@ -204,7 +187,7 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>3.1</version>
+									<version>3.9.0</version>
 								</requireMavenVersion>
 							</rules>
 						</configuration>
@@ -307,19 +290,6 @@
 			<build>
 				<plugins>
 					<plugin>
-						<groupId>org.eclipse.tycho.extras</groupId>
-						<artifactId>tycho-pack200a-plugin</artifactId>
-						<version>${tycho.version}</version>
-						<executions>
-							<execution>
-								<id>pack200-normalize</id>
-								<goals>
-									<goal>normalize</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
 						<groupId>org.eclipse.cbi.maven.plugins</groupId>
 						<artifactId>eclipse-jarsigner-plugin</artifactId>
 						<version>${cbi.version}</version>
@@ -328,19 +298,6 @@
 								<id>sign</id>
 								<goals>
 									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.eclipse.tycho.extras</groupId>
-						<artifactId>tycho-pack200b-plugin</artifactId>
-						<version>${tycho.version}</version>
-						<executions>
-							<execution>
-								<id>pack200-pack</id>
-								<goals>
-									<goal>pack</goal>
 								</goals>
 							</execution>
 						</executions>

@@ -19,8 +19,10 @@ import org.eclipse.egerrit.internal.core.command.ChangeOption;
 import org.eclipse.egerrit.internal.core.command.DeleteDraftRevisionCommand;
 import org.eclipse.egerrit.internal.core.command.GetChangeCommand;
 import org.eclipse.egerrit.internal.core.exception.EGerritException;
+import org.eclipse.egerrit.core.tests.Common;
 import org.eclipse.egerrit.internal.model.RevisionInfo;
 import org.eclipse.emf.common.util.EMap;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,6 +36,8 @@ public class DeleteDraftRevisionCommandTest extends CommandTestWithSimpleReview 
 
 	@Before
 	public void createDraftReview() {
+		//Draft revisions were removed in Gerrit 2.16
+		Assume.assumeTrue(Common.SUPPORTS_DRAFT_CHANGES);
 		createReviewWithSimpleFile(true);
 		amendLastCommit(true);
 	}

@@ -7,7 +7,7 @@ Bundle-ClassPath: .
 Bundle-Activator: org.eclipse.egerrit.internal.model.provider.EgerritEditPlugin$Implementation
 Bundle-Vendor: %providerName
 Bundle-Localization: plugin
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Export-Package: org.eclipse.egerrit.internal.model.provider
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.egerrit.model;bundle-version="1.3.0";visibility:=reexport,

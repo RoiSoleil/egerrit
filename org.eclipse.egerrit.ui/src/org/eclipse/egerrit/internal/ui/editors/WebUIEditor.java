@@ -13,8 +13,10 @@ package org.eclipse.egerrit.internal.ui.editors;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.Base64;
 
 import org.eclipse.core.runtime.FileLocator;
@@ -41,6 +43,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
+import org.eclipse.swt.browser.LocationEvent;
+import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.browser.ProgressAdapter;
 import org.eclipse.swt.browser.ProgressEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -58,6 +62,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.part.EditorPart;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Editor showing the web UI of the Gerrit server for a change.
@@ -72,7 +78,11 @@ public class WebUIEditor extends EditorPart {
 
 	public static final String EDITOR_ID = "org.eclipse.egerrit.ui.editors.WebUIEditor"; //$NON-NLS-1$
 
+	private static final Logger logger = LoggerFactory.getLogger(WebUIEditor.class);
+
 	private static final String OPEN_FILE_FUNCTION = "egerritOpenFile"; //$NON-NLS-1$
+
+	private static final String OPEN_FILE_SCHEME = "egerrit-open-in-eclipse:"; //$NON-NLS-1$
 
 	private static final String LOGO_PATH = "icons/eclipse16.png"; //$NON-NLS-1$
 
@@ -122,6 +132,25 @@ public class WebUIEditor extends EditorPart {
 				return null;
 			}
 		};
+		//Second way to reach the Java code from the injected buttons, in case the
+		//JavaScript bridge (BrowserFunction) is not available: the custom URL is
+		//intercepted and the navigation is cancelled
+		fBrowser.addLocationListener(new LocationListener() {
+			@Override
+			public void changing(LocationEvent event) {
+				String location = event.location;
+				if (location != null && location.startsWith(OPEN_FILE_SCHEME)) {
+					event.doit = false;
+					String link = decodeLink(location.substring(OPEN_FILE_SCHEME.length()));
+					Display.getDefault().asyncExec(() -> openFileInEclipse(link));
+				}
+			}
+
+			@Override
+			public void changed(LocationEvent event) {
+				//Nothing to do
+			}
+		});
 		fBrowser.addProgressListener(new ProgressAdapter() {
 			@Override
 			public void completed(ProgressEvent event) {
@@ -129,6 +158,14 @@ public class WebUIEditor extends EditorPart {
 			}
 		});
 		fBrowser.setUrl(fUrl);
+	}
+
+	private static String decodeLink(String value) {
+		try {
+			return URLDecoder.decode(value, "UTF-8"); //$NON-NLS-1$
+		} catch (UnsupportedEncodingException | IllegalArgumentException e) {
+			return value;
+		}
 	}
 
 	/**
@@ -168,6 +205,7 @@ public class WebUIEditor extends EditorPart {
 		}
 		try {
 			fBrowser.evaluate(WebUIInjection.getScript(getLogoDataUrl()));
+			logger.debug("eGerrit button injection script sent to {}", fUrl); //$NON-NLS-1$
 		} catch (SWTError e) {
 			EGerritCorePlugin.logError(e.getMessage());
 		}

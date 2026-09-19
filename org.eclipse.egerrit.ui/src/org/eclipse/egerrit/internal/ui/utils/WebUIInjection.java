@@ -56,6 +56,7 @@ public final class WebUIInjection {
 			  }
 			  window.__egerritInjectedVersion = VERSION;
 			  var MARK = 'egerrit-open-in-eclipse';
+			  var FLOAT_ID = 'egerrit-open-in-eclipse-floating';
 			  var LOGO = '__EGERrit_LOGO__';
 			  var pending = false;
 			  var scanning = false;
@@ -63,6 +64,44 @@ public final class WebUIInjection {
 			  function isInjected(anchor) {
 			    var next = anchor.nextElementSibling;
 			    return !!next && !!next.classList && next.classList.contains(MARK);
+			  }
+
+			  function isMagicPath(path) {
+			    return !!path && (path.charAt(0) === '/' || path === 'COMMIT_MSG' || path === 'MERGE_LIST');
+			  }
+
+			  function pathFromUrl() {
+			    var url = window.location.href;
+			    var marker = url.indexOf('/+/');
+			    if (marker < 0) {
+			      return null;
+			    }
+			    var rest = url.substring(marker + 3);
+			    var firstSlash = rest.indexOf('/');
+			    if (firstSlash < 0) {
+			      return null;
+			    }
+			    var secondSlash = rest.indexOf('/', firstSlash + 1);
+			    if (secondSlash < 0) {
+			      return null;
+			    }
+			    var path = rest.substring(secondSlash + 1);
+			    var end = path.length;
+			    var query = path.indexOf('?');
+			    if (query >= 0 && query < end) {
+			      end = query;
+			    }
+			    var fragment = path.indexOf('#');
+			    if (fragment >= 0 && fragment < end) {
+			      end = fragment;
+			    }
+			    path = path.substring(0, end);
+			    try {
+			      path = decodeURIComponent(path);
+			    } catch (error) {
+			      //Keep the raw path
+			    }
+			    return path;
 			  }
 
 			  function createButton(getLink) {
@@ -94,11 +133,24 @@ public final class WebUIInjection {
 			      } catch (error) {
 			        link = null;
 			      }
-			      if (link && typeof egerritOpenFile === 'function') {
-			        try {
-			          egerritOpenFile(link);
-			        } catch (error) {
-			          //The bridge is not available, ignore
+			      if (link) {
+			        var bridged = false;
+			        if (typeof egerritOpenFile === 'function') {
+			          try {
+			            egerritOpenFile(link);
+			            bridged = true;
+			          } catch (error) {
+			            bridged = false;
+			          }
+			        }
+			        if (!bridged) {
+			          //Fallback not relying on the JavaScript bridge: the URL is
+			          //intercepted by the location listener of the browser
+			          try {
+			            window.location.href = 'egerrit-open-in-eclipse:' + encodeURIComponent(link);
+			          } catch (error) {
+			            //Nothing else can be tried
+			          }
 			        }
 			      }
 			    }, true);
@@ -127,6 +179,16 @@ public final class WebUIInjection {
 			    var rows = root.querySelectorAll('div.file-row[data-file]');
 			    for (var i = 0; i < rows.length; i++) {
 			      (function (row) {
+			        var rowPath = null;
+			        try {
+			          rowPath = JSON.parse(row.getAttribute('data-file')).path;
+			        } catch (error) {
+			          rowPath = null;
+			        }
+			        if (isMagicPath(rowPath)) {
+			          //Magic files (commit message, merge list, ...) do not exist in the workspace
+			          return;
+			        }
 			        var anchor = row.querySelector('span.path a.pathLink');
 			        injectAfter(anchor, function () {
 			          return anchor.getAttribute('href');
@@ -136,13 +198,15 @@ public final class WebUIInjection {
 
 			    //Header of the diff view: the button uses the URL of the page, so it follows
 			    //the previous/next navigation and the file selection
-			    var dropdowns = root.querySelectorAll('.jumpToFileContainer > gr-dropdown-list');
-			    for (var j = 0; j < dropdowns.length; j++) {
-			      (function (dropdown) {
-			        injectAfter(dropdown, function () {
-			          return window.location.href;
-			        });
-			      })(dropdowns[j]);
+			    if (!isMagicPath(pathFromUrl())) {
+			      var dropdowns = root.querySelectorAll('.jumpToFileContainer > gr-dropdown-list');
+			      for (var j = 0; j < dropdowns.length; j++) {
+			        (function (dropdown) {
+			          injectAfter(dropdown, function () {
+			            return window.location.href;
+			          });
+			        })(dropdowns[j]);
+			      }
 			    }
 
 			    var elements = root.querySelectorAll('*');
@@ -153,6 +217,41 @@ public final class WebUIInjection {
 			    }
 			  }
 
+			  function looksLikeFileUrl() {
+			    //True when the URL is a file URL: /c/<project>/+/<change>/<patchset>/<path>
+			    var url = window.location.href;
+			    var marker = url.indexOf('/+/');
+			    if (marker < 0) {
+			      return false;
+			    }
+			    var rest = url.substring(marker + 3);
+			    var firstSlash = rest.indexOf('/');
+			    if (firstSlash < 0) {
+			      return false;
+			    }
+			    rest = rest.substring(firstSlash + 1);
+			    var secondSlash = rest.indexOf('/');
+			    return secondSlash >= 0 && secondSlash < rest.length - 1;
+			  }
+
+			  function injectFloatingButton() {
+			    if (document.getElementById(FLOAT_ID)) {
+			      return;
+			    }
+			    if (!document.body || !looksLikeFileUrl() || isMagicPath(pathFromUrl())) {
+			      return;
+			    }
+			    var button = createButton(function () {
+			      return window.location.href;
+			    });
+			    button.id = FLOAT_ID;
+			    button.title = 'Open this file in the Eclipse editor';
+			    button.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483647;'
+			      + 'display:inline-flex;align-items:center;cursor:pointer;padding:6px;border-radius:4px;'
+			      + 'background:rgba(128,128,128,0.15);box-shadow:0 1px 4px rgba(0,0,0,0.3);';
+			    document.body.appendChild(button);
+			  }
+
 			  function scanAll() {
 			    if (scanning) {
 			      return;
@@ -160,6 +259,13 @@ public final class WebUIInjection {
 			    scanning = true;
 			    try {
 			      scan(document);
+			      if (document.querySelectorAll('.' + MARK).length === 0) {
+			        //No button could be injected in the Gerrit UI: add a floating one so
+			        //that the feature remains usable even if the Gerrit DOM changes
+			        injectFloatingButton();
+			      }
+			    } catch (error) {
+			      //Never break the page
 			    } finally {
 			      scanning = false;
 			    }

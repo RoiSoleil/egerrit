@@ -47,6 +47,8 @@ import org.eclipse.swt.browser.LocationEvent;
 import org.eclipse.swt.browser.LocationListener;
 import org.eclipse.swt.browser.ProgressAdapter;
 import org.eclipse.swt.browser.ProgressEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -85,6 +87,12 @@ public class WebUIEditor extends EditorPart {
 	private static final String OPEN_FILE_SCHEME = "egerrit-open-in-eclipse:"; //$NON-NLS-1$
 
 	private static final String LOGO_PATH = "icons/eclipse16.png"; //$NON-NLS-1$
+
+	/** Mouse button used to navigate to the previous page (X11 button 8) */
+	private static final int MOUSE_PREVIOUS_BUTTON = 8;
+
+	/** Mouse button used to navigate to the next page (X11 button 9) */
+	private static final int MOUSE_NEXT_BUTTON = 9;
 
 	private GerritClient fGerritClient;
 
@@ -149,6 +157,18 @@ public class WebUIEditor extends EditorPart {
 			@Override
 			public void changed(LocationEvent event) {
 				//Nothing to do
+			}
+		});
+		//Mouse buttons 8 and 9 are the "previous" and "next" buttons of the mouse. The
+		//browser widget does not handle them by default: use them to navigate in the history
+		fBrowser.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent event) {
+				if (event.button == MOUSE_PREVIOUS_BUTTON) {
+					fBrowser.back();
+				} else if (event.button == MOUSE_NEXT_BUTTON) {
+					fBrowser.forward();
+				}
 			}
 		});
 		fBrowser.addProgressListener(new ProgressAdapter() {

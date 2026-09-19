@@ -318,7 +318,10 @@ public class WebUIEditor extends EditorPart {
 		if (!checkout) {
 			return false;
 		}
-		new CheckoutRevision(revision, fGerritClient).run();
+		CheckoutRevision checkoutRevision = new CheckoutRevision(revision, fGerritClient);
+		//Fetch and check out the change without showing the "Fetch a change from Gerrit" wizard
+		checkoutRevision.setSilentCheckout(true);
+		checkoutRevision.run();
 		//CheckoutRevision already reported the problem if the checkout did not happen
 		return isActiveRevision(revision);
 	}

@@ -13,6 +13,8 @@ package org.eclipse.egerrit.internal.ui.editors;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -40,6 +42,7 @@ import org.eclipse.egerrit.internal.ui.utils.UIUtils;
 import org.eclipse.egit.ui.internal.UIRepositoryUtils;
 import org.eclipse.egit.ui.internal.UIText;
 import org.eclipse.egit.ui.internal.fetch.FetchGerritChangeWizard;
+import org.eclipse.egit.ui.internal.fetch.FetchOperationUI;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -50,8 +53,11 @@ import org.eclipse.jgit.api.CheckoutResult;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.RenameBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.osgi.util.NLS;
@@ -70,11 +76,27 @@ public class CheckoutRevision extends Action {
 
 	private static final String RENAME_KEY = "branchRenameTip"; //$NON-NLS-1$
 
+	/**
+	 * When set, a change that is not available locally is fetched and checked out without showing the
+	 * "Fetch a change from Gerrit" wizard and without asking to rename the branch.
+	 */
+	private boolean silentCheckout;
+
 	public CheckoutRevision(RevisionInfo revision, GerritClient gerritClient) {
 		this.revisionCheckedOut = revision;
 		this.gerritClient = gerritClient;
 		this.changeInfo = this.revisionCheckedOut.getChangeInfo();
 		setText(Messages.CheckoutRevision_0);
+	}
+
+	/**
+	 * Set the silent mode of the checkout: the change is fetched and checked out without any user interaction.
+	 *
+	 * @param silent
+	 *            <code>true</code> to perform the checkout silently
+	 */
+	public void setSilentCheckout(boolean silent) {
+		this.silentCheckout = silent;
 	}
 
 	@Override
@@ -98,7 +120,9 @@ public class CheckoutRevision extends Action {
 		reActivateWorkspaceRevision = selectAndCheckoutBranch(localRepo, refSelected, potentialBranches);
 
 		//Verify if the user wants to rename the selected branch
-		shouldRenameBranch(potentialBranches, refSelected, localRepo);
+		if (!silentCheckout) {
+			shouldRenameBranch(potentialBranches, refSelected, localRepo);
+		}
 
 		if (reActivateWorkspaceRevision) {
 			refreshWorkspace(localRepo);
@@ -144,13 +168,17 @@ public class CheckoutRevision extends Action {
 			reActivateWorkspaceRevision = branchUiSelection(localRepo, potentialBranches);
 		} else {
 			if (potentialBranches.isEmpty()) {
-				//New selected
-				FetchGerritChangeWizard var = new FetchGerritChangeWizard(localRepo, refSelected);
-				WizardDialog w = new WizardDialog(getShell(), var);
-				w.create();
-				int ret = w.open();
-				if (ret == Window.CANCEL) {
-					reActivateWorkspaceRevision = false;
+				if (silentCheckout) {
+					reActivateWorkspaceRevision = fetchAndCheckout(localRepo, refSelected);
+				} else {
+					//New selected
+					FetchGerritChangeWizard var = new FetchGerritChangeWizard(localRepo, refSelected);
+					WizardDialog w = new WizardDialog(getShell(), var);
+					w.create();
+					int ret = w.open();
+					if (ret == Window.CANCEL) {
+						reActivateWorkspaceRevision = false;
+					}
 				}
 			} else if (potentialBranches.entrySet().iterator().next().getValue().equals(BranchMatch.PERFECT_MATCH)) {
 				setSelectedBranch(potentialBranches.keySet().iterator().next()); //Get the only element PERFECT_MATCH
@@ -164,6 +192,55 @@ public class CheckoutRevision extends Action {
 			}
 		}
 		return reActivateWorkspaceRevision;
+	}
+
+	/**
+	 * Fetch the change in the repository and check it out in the default branch (change/&lt;change&gt;/&lt;patchset&gt;)
+	 * without any user interaction.
+	 *
+	 * @param localRepo
+	 *            the repository
+	 * @param refSelected
+	 *            the reference of the patch set to check out
+	 * @return <code>true</code> if the change has been checked out
+	 */
+	private boolean fetchAndCheckout(Repository localRepo, String refSelected) {
+		Change changeRef = Change.fromRef(refSelected);
+		if (changeRef == null) {
+			EGerritCorePlugin.logError("The reference " + refSelected + " is not a Gerrit change"); //$NON-NLS-1$ //$NON-NLS-2$
+			return false;
+		}
+		String branchName = changeRef.getBranchNameLabel();
+		try {
+			if (localRepo.exactRef(Constants.R_HEADS + branchName) == null) {
+				//Fetch the patch set into FETCH_HEAD
+				URIish uri = new URIish(gerritClient.getRepository().getURIBuilder(false).toString() + '/' //$NON-NLS-1$
+						+ changeInfo.getProject());
+				List<RefSpec> specs = new ArrayList<>(1);
+				specs.add(new RefSpec().setSource(refSelected).setDestination(Constants.FETCH_HEAD));
+				new FetchOperationUI(localRepo, uri, specs, false).execute(new NullProgressMonitor());
+			}
+			try (Git git = new Git(localRepo)) {
+				if (localRepo.exactRef(Constants.R_HEADS + branchName) != null) {
+					git.checkout().setName(branchName).setForced(false).call();
+				} else {
+					git.checkout()
+							.setCreateBranch(true)
+							.setName(branchName)
+							.setStartPoint(Constants.FETCH_HEAD)
+							.setForced(false)
+							.call();
+				}
+			}
+			setSelectedBranch(branchName);
+			return true;
+		} catch (CoreException | IOException | URISyntaxException | GitAPIException e) {
+			EGerritCorePlugin.logError(e.getMessage());
+			Status status = new Status(IStatus.ERROR, EGerritCorePlugin.PLUGIN_ID,
+					e.getMessage() != null ? e.getMessage() : e.toString());
+			ErrorDialog.openError(getShell(), Messages.CheckoutRevision_2, Messages.CheckoutRevision_3, status);
+			return false;
+		}
 	}
 
 	/**

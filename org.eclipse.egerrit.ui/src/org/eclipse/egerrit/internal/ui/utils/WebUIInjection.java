@@ -25,7 +25,7 @@ package org.eclipse.egerrit.internal.ui.utils;
 public final class WebUIInjection {
 
 	/** Version of the script; it has to be increased when the script changes. */
-	private static final String VERSION = "2"; //$NON-NLS-1$
+	private static final String VERSION = "3"; //$NON-NLS-1$
 
 	private static final String LOGO_PLACEHOLDER = "__EGERrit_LOGO__"; //$NON-NLS-1$
 
@@ -354,6 +354,31 @@ public final class WebUIInjection {
 			    }, 250);
 			  }
 
+			  function installNavigation() {
+			    if (window.__egerritNavigationInstalled) {
+			      return;
+			    }
+			    window.__egerritNavigationInstalled = true;
+			    //Previous/next buttons of the mouse, when the browser reports them in the DOM
+			    //(DOM buttons 3 and 4 per the UI Events specification)
+			    document.addEventListener('mousedown', function (event) {
+			      if (event.button === 3) {
+			        window.history.back();
+			      } else if (event.button === 4) {
+			        window.history.forward();
+			      }
+			    }, true);
+			    //Alt+Left/Alt+Right, also used by the previous/next buttons of some mice
+			    document.addEventListener('keydown', function (event) {
+			      if (event.altKey && event.key === 'ArrowLeft') {
+			        window.history.back();
+			      } else if (event.altKey && event.key === 'ArrowRight') {
+			        window.history.forward();
+			      }
+			    }, true);
+			  }
+
+			  installNavigation();
 			  window.__egerritScan = scanAll;
 			  window.addEventListener('hashchange', scheduleScan);
 			  window.addEventListener('popstate', scheduleScan);

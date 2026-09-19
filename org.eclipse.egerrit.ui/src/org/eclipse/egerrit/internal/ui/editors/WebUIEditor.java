@@ -88,11 +88,16 @@ public class WebUIEditor extends EditorPart {
 
 	private static final String LOGO_PATH = "icons/eclipse16.png"; //$NON-NLS-1$
 
-	/** Mouse button used to navigate to the previous page (X11 button 8) */
-	private static final int MOUSE_PREVIOUS_BUTTON = 8;
+	/**
+	 * Mouse buttons used to navigate to the previous page: 8 on X11 (see the Eclipse bug 170097), 4 on the other
+	 * platforms
+	 */
+	private static final int[] MOUSE_PREVIOUS_BUTTONS = new int[] { 8, 4 };
 
-	/** Mouse button used to navigate to the next page (X11 button 9) */
-	private static final int MOUSE_NEXT_BUTTON = 9;
+	/**
+	 * Mouse buttons used to navigate to the next page: 9 on X11 (see the Eclipse bug 170097), 5 on the other platforms
+	 */
+	private static final int[] MOUSE_NEXT_BUTTONS = new int[] { 9, 5 };
 
 	private GerritClient fGerritClient;
 
@@ -164,9 +169,11 @@ public class WebUIEditor extends EditorPart {
 		fBrowser.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent event) {
-				if (event.button == MOUSE_PREVIOUS_BUTTON) {
+				if (contains(MOUSE_PREVIOUS_BUTTONS, event.button)) {
+					logger.debug("Previous mouse button pressed, going back"); //$NON-NLS-1$
 					fBrowser.back();
-				} else if (event.button == MOUSE_NEXT_BUTTON) {
+				} else if (contains(MOUSE_NEXT_BUTTONS, event.button)) {
+					logger.debug("Next mouse button pressed, going forward"); //$NON-NLS-1$
 					fBrowser.forward();
 				}
 			}
@@ -178,6 +185,15 @@ public class WebUIEditor extends EditorPart {
 			}
 		});
 		fBrowser.setUrl(fUrl);
+	}
+
+	private static boolean contains(int[] values, int value) {
+		for (int candidate : values) {
+			if (candidate == value) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static String decodeLink(String value) {

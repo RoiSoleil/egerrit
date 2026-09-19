@@ -19,6 +19,9 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.Base64;
 
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.IHandler;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.egerrit.internal.core.EGerritCorePlugin;
@@ -54,12 +57,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.handlers.IHandlerActivation;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
@@ -88,16 +92,7 @@ public class WebUIEditor extends EditorPart {
 
 	private static final String LOGO_PATH = "icons/eclipse16.png"; //$NON-NLS-1$
 
-	/**
-	 * Mouse buttons used to navigate to the previous page: 8 on X11 (see the Eclipse bug 170097), 4 on the other
-	 * platforms
-	 */
-	private static final int[] MOUSE_PREVIOUS_BUTTONS = new int[] { 8, 4 };
 
-	/**
-	 * Mouse buttons used to navigate to the next page: 9 on X11 (see the Eclipse bug 170097), 5 on the other platforms
-	 */
-	private static final int[] MOUSE_NEXT_BUTTONS = new int[] { 9, 5 };
 
 	private GerritClient fGerritClient;
 
@@ -108,6 +103,10 @@ public class WebUIEditor extends EditorPart {
 	private Browser fBrowser;
 
 	private BrowserFunction fOpenFileFunction;
+
+	private IHandlerActivation fBackwardHistoryActivation;
+
+	private IHandlerActivation fForwardHistoryActivation;
 
 	@Override
 	public void init(IEditorSite site, IEditorInput input) throws PartInitException {
@@ -164,40 +163,58 @@ public class WebUIEditor extends EditorPart {
 				//Nothing to do
 			}
 		});
-		//The "previous" and "next" buttons of the mouse are not handled by the browser
-		//widget: use them to navigate in the history. The event must be cancelled
-		//(doit = false) so that SWT claims it and does not propagate it to the parent
-		//widgets, where the workbench would switch the editors.
-		fBrowser.addListener(SWT.MouseDown, new Listener() {
-			@Override
-			public void handleEvent(Event event) {
-				if (contains(MOUSE_PREVIOUS_BUTTONS, event.button)) {
-					event.doit = false;
-					logger.debug("Previous mouse button pressed, going back"); //$NON-NLS-1$
-					fBrowser.back();
-				} else if (contains(MOUSE_NEXT_BUTTONS, event.button)) {
-					event.doit = false;
-					logger.debug("Next mouse button pressed, going forward"); //$NON-NLS-1$
-					fBrowser.forward();
-				}
-			}
-		});
 		fBrowser.addProgressListener(new ProgressAdapter() {
 			@Override
 			public void completed(ProgressEvent event) {
 				injectScript();
 			}
 		});
+		registerHistoryHandlers();
 		fBrowser.setUrl(fUrl);
 	}
 
-	private static boolean contains(int[] values, int value) {
-		for (int candidate : values) {
-			if (candidate == value) {
-				return true;
-			}
+	/**
+	 * Override the backward/forward history commands while this editor is active.
+	 * <p>
+	 * The workbench maps the "previous"/"next" buttons of the mouse (and the Alt+Left/Alt+Right shortcuts) to the
+	 * backward/forward history commands through a display filter: without this override, using these buttons would
+	 * switch the editors instead of navigating in the embedded browser. The handlers are activated in the context of
+	 * this editor, so they are used only while this editor is active.
+	 */
+	private void registerHistoryHandlers() {
+		IHandlerService handlerService = getSite().getService(IHandlerService.class);
+		if (handlerService == null) {
+			return;
 		}
-		return false;
+		IHandler historyHandler = new AbstractHandler() {
+			@Override
+			public Object execute(ExecutionEvent event) {
+				boolean backward = IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY
+						.equals(event.getCommand().getId());
+				if (fBrowser != null && !fBrowser.isDisposed()) {
+					if (backward) {
+						logger.debug("Going back in the web UI"); //$NON-NLS-1$
+						fBrowser.back();
+					} else {
+						logger.debug("Going forward in the web UI"); //$NON-NLS-1$
+						fBrowser.forward();
+					}
+				}
+				return null;
+			}
+		};
+		fBackwardHistoryActivation = handlerService
+				.activateHandler(IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, historyHandler);
+		fForwardHistoryActivation = handlerService
+				.activateHandler(IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, historyHandler);
+	}
+
+	private void deactivateHistoryHandlers() {
+		IHandlerService handlerService = getSite().getService(IHandlerService.class);
+		if (handlerService != null) {
+			handlerService.deactivateHandler(fBackwardHistoryActivation);
+			handlerService.deactivateHandler(fForwardHistoryActivation);
+		}
 	}
 
 	private static String decodeLink(String value) {
@@ -368,6 +385,7 @@ public class WebUIEditor extends EditorPart {
 
 	@Override
 	public void dispose() {
+		deactivateHistoryHandlers();
 		if (fOpenFileFunction != null && !fOpenFileFunction.isDisposed()) {
 			fOpenFileFunction.dispose();
 		}

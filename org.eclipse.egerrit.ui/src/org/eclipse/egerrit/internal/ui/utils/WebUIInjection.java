@@ -25,7 +25,7 @@ package org.eclipse.egerrit.internal.ui.utils;
 public final class WebUIInjection {
 
 	/** Version of the script; it has to be increased when the script changes. */
-	private static final String VERSION = "4"; //$NON-NLS-1$
+	private static final String VERSION = "5"; //$NON-NLS-1$
 
 	private static final String LOGO_PLACEHOLDER = "__EGERrit_LOGO__"; //$NON-NLS-1$
 
@@ -354,46 +354,6 @@ public final class WebUIInjection {
 			    }, 250);
 			  }
 
-			  function consume(event) {
-			    event.preventDefault();
-			    event.stopPropagation();
-			    if (event.stopImmediatePropagation) {
-			      event.stopImmediatePropagation();
-			    }
-			  }
-
-			  function installNavigation() {
-			    if (window.__egerritNavigationInstalled) {
-			      return;
-			    }
-			    window.__egerritNavigationInstalled = true;
-			    //Previous/next buttons of the mouse, when the browser reports them in the DOM
-			    //(DOM buttons 3 and 4 per the UI Events specification). The event must be
-			    //consumed, otherwise it reaches the workbench of Eclipse.
-			    document.addEventListener('mousedown', function (event) {
-			      if (event.button === 3) {
-			        consume(event);
-			        window.history.back();
-			      } else if (event.button === 4) {
-			        consume(event);
-			        window.history.forward();
-			      }
-			    }, true);
-			    //Alt+Left/Alt+Right, also used by the previous/next buttons of some mice. In
-			    //Eclipse these shortcuts are bound to the previous/next editor: the event must
-			    //be consumed so that the editor is not switched.
-			    document.addEventListener('keydown', function (event) {
-			      if (event.altKey && event.key === 'ArrowLeft') {
-			        consume(event);
-			        window.history.back();
-			      } else if (event.altKey && event.key === 'ArrowRight') {
-			        consume(event);
-			        window.history.forward();
-			      }
-			    }, true);
-			  }
-
-			  installNavigation();
 			  window.__egerritScan = scanAll;
 			  window.addEventListener('hashchange', scheduleScan);
 			  window.addEventListener('popstate', scheduleScan);

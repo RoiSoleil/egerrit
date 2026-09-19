@@ -142,6 +142,16 @@ public class Messages extends NLS {
 
 	public static String ChangeDetailEditor_openInWebUITooltip;
 
+	public static String WebUIEditor_tabSuffix;
+
+	public static String WebUIEditor_noBrowser;
+
+	public static String WebUIEditor_openExternalBrowser;
+
+	public static String WebUIEditor_checkoutTitle;
+
+	public static String WebUIEditor_checkoutMessage;
+
 	public static String ChangeDetailEditor_cherryPickBranch;
 
 	public static String ChangeDetailEditor_updatingRelatedChanges;

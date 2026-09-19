@@ -12,6 +12,13 @@
             id="org.eclipse.egerrit.ui.editors.ChangeDetailEditor"
             name="ChangeDetail Editor">
       </editor>
+      <editor
+            class="org.eclipse.egerrit.internal.ui.editors.WebUIEditor"
+            default="false"
+            icon="icons/internal_browser.png"
+            id="org.eclipse.egerrit.ui.editors.WebUIEditor"
+            name="Gerrit Web UI Editor">
+      </editor>
    </extension>
    <extension
          id="org.eclipse.egerrit.ui.commentMarker"

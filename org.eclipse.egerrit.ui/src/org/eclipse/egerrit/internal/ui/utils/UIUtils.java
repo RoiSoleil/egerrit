@@ -290,6 +290,29 @@ public class UIUtils {
 		return openSingleFile(workspaceFile, line);
 	}
 
+	/**
+	 * Open a file of a change in a single editor, using its path in the repository.
+	 *
+	 * @param filePath
+	 *            the path of the file in the repository
+	 * @param gerritClient
+	 *            the client
+	 * @param revInfo
+	 *            the revision the file belongs to
+	 * @param line
+	 *            the line to reveal
+	 * @return <code>true</code> if the file could be opened
+	 */
+	public static boolean openSingleFile(String filePath, GerritClient gerritClient, RevisionInfo revInfo, int line) {
+		if (filePath == null || revInfo == null) {
+			return false;
+		}
+		IFile workspaceFile = new OpenCompareEditor(gerritClient, revInfo.getChangeInfo())
+				.getCorrespondingWorkspaceFile(filePath);
+
+		return openSingleFile(workspaceFile, line);
+	}
+
 	public static boolean openSingleFile(IResource resource, int line) {
 		IFile workspaceFile = (resource instanceof IFile) ? (IFile) resource : null;
 		if (workspaceFile == null) {

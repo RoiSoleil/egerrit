@@ -14,8 +14,6 @@
 
 package org.eclipse.egerrit.internal.ui.editors;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -95,8 +93,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.browser.IWebBrowser;
-import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.part.EditorPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -925,18 +921,13 @@ public class ChangeDetailEditor extends EditorPart {
 	}
 
 	/**
-	 * Open the change in the web UI of the Gerrit server using the internal browser of Eclipse.
+	 * Open the change in the web UI of the Gerrit server, in a dedicated editor hosting an embedded browser.
 	 */
 	private void openInWebUI() {
-		String url = UIUtils.buildChangeWebUIUrl(fGerritClient.getRepository().getServerInfo(),
-				fGerritClient.getRepository().getVersion(), fChangeInfo);
 		try {
-			IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench().getBrowserSupport();
-			IWebBrowser browser = browserSupport.createBrowser(IWorkbenchBrowserSupport.AS_EDITOR,
-					"org.eclipse.egerrit.browser." + fChangeInfo.get_number(), //$NON-NLS-1$
-					fChangeInfo.getSubject(), Messages.ChangeDetailEditor_openInWebUITooltip);
-			browser.openURL(new URL(url));
-		} catch (PartInitException | MalformedURLException e) {
+			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			page.openEditor(new WebUIEditorInput(fGerritClient, fChangeInfo), WebUIEditor.EDITOR_ID);
+		} catch (PartInitException e) {
 			EGerritCorePlugin.logError(fGerritClient.getRepository().formatGerritVersion() + e.getMessage());
 		}
 	}

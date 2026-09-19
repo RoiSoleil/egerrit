@@ -44,6 +44,8 @@ public class EGerritImages {
 
 	public static final String SHOW_REVIEW_EDITOR_IMAGE = "icons/EGerritcolor16.png"; //$NON-NLS-1$
 
+	public static final String WEB_UI_IMAGE = "icons/internal_browser.png"; //$NON-NLS-1$
+
 	public static final String NEXT_COMMENT_ANNOTATION_ICON_FILE = "icons/nextComment_menu.gif"; //$NON-NLS-1$
 
 	public static final String PREVIOUS_COMMENT_ANNOTATION_ICON_FILE = "icons/previousComment_menu.gif"; //$NON-NLS-1$
@@ -66,6 +68,7 @@ public class EGerritImages {
 		fgImageRegistry.put(TOGGLE_FILEPATH, EGerritUIPlugin.getImageDescriptor(TOGGLE_FILEPATH));
 		fgImageRegistry.put(CHECKED_IMAGE, EGerritUIPlugin.getImageDescriptor(CHECKED_IMAGE));
 		fgImageRegistry.put(SHOW_REVIEW_EDITOR_IMAGE, EGerritUIPlugin.getImageDescriptor(SHOW_REVIEW_EDITOR_IMAGE));
+		fgImageRegistry.put(WEB_UI_IMAGE, EGerritUIPlugin.getImageDescriptor(WEB_UI_IMAGE));
 		fgImageRegistry.put(NEXT_COMMENT_ANNOTATION_ICON_FILE,
 				EGerritUIPlugin.getImageDescriptor(NEXT_COMMENT_ANNOTATION_ICON_FILE));
 		fgImageRegistry.put(PREVIOUS_COMMENT_ANNOTATION_ICON_FILE,

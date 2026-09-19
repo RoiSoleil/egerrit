@@ -56,7 +56,18 @@ public class OpenCompareEditor {
 	}
 
 	public IFile getCorrespondingWorkspaceFile(FileInfo reviewFile) {
-		File potentialFile = locateFileInLocalGitRepo(reviewFile);
+		if (reviewFile == null) {
+			return null;
+		}
+		return getCorrespondingWorkspaceFile(reviewFile.getPath(), reviewFile.getOld_path());
+	}
+
+	public IFile getCorrespondingWorkspaceFile(String filePath) {
+		return getCorrespondingWorkspaceFile(filePath, null);
+	}
+
+	private IFile getCorrespondingWorkspaceFile(String filePath, String oldFilePath) {
+		File potentialFile = locateFileInLocalGitRepo(filePath, oldFilePath);
 		IFile workspaceFile = null;
 		if (potentialFile == null) {
 			logger.debug("The corresponding file could not be found in any git repository known by the workspace."); //$NON-NLS-1$
@@ -78,7 +89,7 @@ public class OpenCompareEditor {
 
 	}
 
-	private File locateFileInLocalGitRepo(FileInfo fileInfo) {
+	private File locateFileInLocalGitRepo(String filePath, String oldFilePath) {
 		Repository repo;
 		try {
 			repo = new GerritToGitMapping(new URIish(gerrit.getRepository().getURIBuilder(false).toString()),
@@ -93,14 +104,14 @@ public class OpenCompareEditor {
 		if (workTree == null) {
 			return null;
 		}
-		File potentialFile = new File(workTree, fileInfo.getPath());
+		File potentialFile = new File(workTree, filePath);
 		if (potentialFile.exists()) {
 			return potentialFile;
 		}
 
 		//Try to find a file with the old name
-		if (fileInfo.getOld_path() != null) {
-			potentialFile = new File(workTree, fileInfo.getOld_path());
+		if (oldFilePath != null) {
+			potentialFile = new File(workTree, oldFilePath);
 			if (potentialFile.exists()) {
 				return potentialFile;
 			}

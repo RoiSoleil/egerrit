@@ -11,6 +11,7 @@
 
 package org.eclipse.egerrit.internal.ui.editors;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -19,7 +20,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.egerrit.internal.core.EGerritCorePlugin;
 import org.eclipse.egerrit.internal.core.GerritClient;
@@ -93,7 +101,33 @@ public class CheckoutRevision extends Action {
 		shouldRenameBranch(potentialBranches, refSelected, localRepo);
 
 		if (reActivateWorkspaceRevision) {
+			refreshWorkspace(localRepo);
 			ActiveWorkspaceRevision.getInstance().activateCurrentRevision(gerritClient, revisionCheckedOut);
+		}
+	}
+
+	/**
+	 * Refresh the workspace projects located in the repository after a checkout, so that the resources are
+	 * synchronized with the files modified by git.
+	 *
+	 * @param localRepo
+	 *            the repository that has been checked out
+	 */
+	private void refreshWorkspace(Repository localRepo) {
+		File workTree = localRepo.getWorkTree();
+		if (workTree == null) {
+			return;
+		}
+		IPath workTreePath = Path.fromOSString(workTree.getAbsolutePath());
+		for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+			IPath projectLocation = project.getLocation();
+			if (projectLocation != null && project.isAccessible() && workTreePath.isPrefixOf(projectLocation)) {
+				try {
+					project.refreshLocal(IResource.DEPTH_INFINITE, new NullProgressMonitor());
+				} catch (CoreException e) {
+					EGerritCorePlugin.logError(e.getMessage());
+				}
+			}
 		}
 	}
 

@@ -17,6 +17,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.egerrit.internal.core.EGerritCorePlugin;
 import org.eclipse.egerrit.internal.core.GerritClient;
@@ -317,6 +319,12 @@ public class UIUtils {
 		IFile workspaceFile = (resource instanceof IFile) ? (IFile) resource : null;
 		if (workspaceFile == null) {
 			return false;
+		}
+		//Synchronize the file with the file system: it may have been changed by a git checkout
+		try {
+			workspaceFile.refreshLocal(IResource.DEPTH_ZERO, new NullProgressMonitor());
+		} catch (CoreException e) {
+			logger.debug("Could not refresh " + workspaceFile.getFullPath(), e); //$NON-NLS-1$
 		}
 		IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();

@@ -108,7 +108,7 @@ public final class WebUIInjection {
 			    var button = document.createElement('span');
 			    button.className = MARK;
 			    button.title = 'Open this file in the Eclipse editor';
-			    button.style.cssText = 'display:inline-flex;align-items:center;margin-left:6px;cursor:pointer;vertical-align:middle;flex:none;';
+			    button.style.cssText = 'display:inline-flex;align-items:center;margin-left:4px;cursor:pointer;vertical-align:middle;flex:none;position:relative;top:-1px;';
 			    if (LOGO) {
 			      var image = document.createElement('img');
 			      image.src = LOGO;
@@ -164,6 +164,30 @@ public final class WebUIInjection {
 			    anchor.parentNode.insertBefore(createButton(getLink), anchor.nextElementSibling);
 			  }
 
+			  function injectInFilePath(link, getLink) {
+			    if (!link) {
+			      return;
+			    }
+			    var copy = null;
+			    for (var i = 0; i < link.children.length; i++) {
+			      var child = link.children[i];
+			      if (child.classList && child.classList.contains(MARK)) {
+			        //The button is already there
+			        return;
+			      }
+			      if (child.tagName === 'GR-COPY-CLIPBOARD') {
+			        copy = child;
+			      }
+			    }
+			    //Insert the button right after the file name and before the "copy" icon of Gerrit
+			    var button = createButton(getLink);
+			    if (copy) {
+			      link.insertBefore(button, copy);
+			    } else {
+			      link.appendChild(button);
+			    }
+			  }
+
 			  function observe(root) {
 			    if (root.__egerritObserved || typeof MutationObserver !== 'function') {
 			      return;
@@ -190,7 +214,7 @@ public final class WebUIInjection {
 			          return;
 			        }
 			        var anchor = row.querySelector('span.path a.pathLink');
-			        injectAfter(anchor, function () {
+			        injectInFilePath(anchor, function () {
 			          return anchor.getAttribute('href');
 			        });
 			      })(rows[i]);

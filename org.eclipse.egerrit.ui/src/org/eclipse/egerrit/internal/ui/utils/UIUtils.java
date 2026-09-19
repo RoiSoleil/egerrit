@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.egerrit.internal.core.EGerritCorePlugin;
 import org.eclipse.egerrit.internal.core.GerritClient;
+import org.eclipse.egerrit.internal.core.GerritServerInformation;
 import org.eclipse.egerrit.internal.core.command.CreateDraftCommand;
 import org.eclipse.egerrit.internal.core.command.SetReviewCommand;
 import org.eclipse.egerrit.internal.core.exception.EGerritException;
@@ -61,6 +62,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.osgi.framework.Version;
 import org.osgi.service.prefs.BackingStoreException;
 import org.osgi.service.prefs.Preferences;
 import org.slf4j.Logger;
@@ -448,6 +450,31 @@ public class UIUtils {
 			}
 		}
 		return ret;
+	}
+
+	/**
+	 * Build the URL of a change in the web UI of the Gerrit server.
+	 *
+	 * @param serverInfo
+	 *            the Gerrit server information
+	 * @param version
+	 *            the version of the Gerrit server
+	 * @param changeInfo
+	 *            the change
+	 * @return the URL of the change in the web UI of the server
+	 */
+	public static String buildChangeWebUIUrl(GerritServerInformation serverInfo, Version version,
+			ChangeInfo changeInfo) {
+		String serverUri = serverInfo != null ? serverInfo.getServerURI() : ""; //$NON-NLS-1$
+		if (serverUri.endsWith("/")) { //$NON-NLS-1$
+			serverUri = serverUri.substring(0, serverUri.length() - 1);
+		}
+		if (version != null && version.getMajor() >= 3) {
+			//Gerrit 3.x web UI URL: http://host/c/<project>/+/<change number>
+			return serverUri + "/c/" + changeInfo.getProject() + "/+/" + changeInfo.get_number(); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		//Gerrit 2.x web UI URL: http://host/#/c/<change number>/
+		return serverUri + "/#/c/" + changeInfo.get_number() + "/"; //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 }

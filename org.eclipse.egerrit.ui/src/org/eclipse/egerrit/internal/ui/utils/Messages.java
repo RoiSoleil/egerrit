@@ -138,6 +138,10 @@ public class Messages extends NLS {
 
 	public static String ChangeDetailEditor_9;
 
+	public static String ChangeDetailEditor_openInWebUI;
+
+	public static String ChangeDetailEditor_openInWebUITooltip;
+
 	public static String ChangeDetailEditor_cherryPickBranch;
 
 	public static String ChangeDetailEditor_updatingRelatedChanges;

@@ -14,6 +14,8 @@
 
 package org.eclipse.egerrit.internal.ui.editors;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,6 +95,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.browser.IWebBrowser;
+import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.part.EditorPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -303,9 +307,20 @@ public class ChangeDetailEditor extends EditorPart {
 	}
 
 	private Composite buttonSection(final Composite parent) {
-		final int NUMBER_OF_BUTTONS = 8;
+		final int NUMBER_OF_BUTTONS = 9;
 		final Composite c = new Composite(parent, SWT.NONE);
 		c.setLayout(new GridLayout(NUMBER_OF_BUTTONS, true));
+
+		Button openInWebUI = new Button(c, SWT.PUSH);
+		openInWebUI.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		openInWebUI.setText(Messages.ChangeDetailEditor_openInWebUI);
+		openInWebUI.setToolTipText(Messages.ChangeDetailEditor_openInWebUITooltip);
+		openInWebUI.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				openInWebUI();
+			}
+		});
 
 		Button refresh = new Button(c, SWT.PUSH);
 		refresh.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -907,6 +922,23 @@ public class ChangeDetailEditor extends EditorPart {
 	public void refreshStatus() {
 		//Force change the updated timestamp to cause a full reload to happen
 		loader.reload(true);
+	}
+
+	/**
+	 * Open the change in the web UI of the Gerrit server using the internal browser of Eclipse.
+	 */
+	private void openInWebUI() {
+		String url = UIUtils.buildChangeWebUIUrl(fGerritClient.getRepository().getServerInfo(),
+				fGerritClient.getRepository().getVersion(), fChangeInfo);
+		try {
+			IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench().getBrowserSupport();
+			IWebBrowser browser = browserSupport.createBrowser(IWorkbenchBrowserSupport.AS_EDITOR,
+					"org.eclipse.egerrit.browser." + fChangeInfo.get_number(), //$NON-NLS-1$
+					fChangeInfo.getSubject(), Messages.ChangeDetailEditor_openInWebUITooltip);
+			browser.openURL(new URL(url));
+		} catch (PartInitException | MalformedURLException e) {
+			EGerritCorePlugin.logError(fGerritClient.getRepository().formatGerritVersion() + e.getMessage());
+		}
 	}
 
 	private void headerSectionDataBindings() {

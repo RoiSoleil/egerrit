@@ -25,7 +25,7 @@ package org.eclipse.egerrit.internal.ui.utils;
 public final class WebUIInjection {
 
 	/** Version of the script; it has to be increased when the script changes. */
-	private static final String VERSION = "1"; //$NON-NLS-1$
+	private static final String VERSION = "2"; //$NON-NLS-1$
 
 	private static final String LOGO_PLACEHOLDER = "__EGERrit_LOGO__"; //$NON-NLS-1$
 
@@ -108,7 +108,7 @@ public final class WebUIInjection {
 			    var button = document.createElement('span');
 			    button.className = MARK;
 			    button.title = 'Open this file in the Eclipse editor';
-			    button.style.cssText = 'display:inline-flex;align-items:center;margin-left:4px;cursor:pointer;vertical-align:middle;flex:none;position:relative;top:-1px;';
+			    button.style.cssText = 'display:inline-flex;align-items:center;margin-left:4px;margin-right:4px;cursor:pointer;vertical-align:middle;flex:none;position:relative;top:-1px;';
 			    if (LOGO) {
 			      var image = document.createElement('img');
 			      image.src = LOGO;
@@ -188,6 +188,45 @@ public final class WebUIInjection {
 			    }
 			  }
 
+			  function injectInDropdownTrigger(dropdown, getLink) {
+			    if (!dropdown || !dropdown.shadowRoot) {
+			      return null;
+			    }
+			    var trigger = dropdown.shadowRoot.querySelector('gr-button#trigger');
+			    if (!trigger) {
+			      return null;
+			    }
+			    var copy = null;
+			    for (var i = 0; i < trigger.children.length; i++) {
+			      var child = trigger.children[i];
+			      if (child.classList && child.classList.contains(MARK)) {
+			        //The button is already there
+			        return trigger;
+			      }
+			      if (child.tagName === 'GR-COPY-CLIPBOARD') {
+			        copy = child;
+			      }
+			    }
+			    //Insert the button right after the file name and before the "copy" icon of Gerrit
+			    var button = createButton(getLink);
+			    if (copy) {
+			      trigger.insertBefore(button, copy);
+			    } else {
+			      trigger.appendChild(button);
+			    }
+			    return trigger;
+			  }
+
+			  function removeButtonAfter(element) {
+			    if (!element) {
+			      return;
+			    }
+			    var next = element.nextElementSibling;
+			    if (next && next.classList && next.classList.contains(MARK)) {
+			      next.parentNode.removeChild(next);
+			    }
+			  }
+
 			  function observe(root) {
 			    if (root.__egerritObserved || typeof MutationObserver !== 'function') {
 			      return;
@@ -226,9 +265,18 @@ public final class WebUIInjection {
 			      var dropdowns = root.querySelectorAll('.jumpToFileContainer > gr-dropdown-list');
 			      for (var j = 0; j < dropdowns.length; j++) {
 			        (function (dropdown) {
-			          injectAfter(dropdown, function () {
+			          var trigger = injectInDropdownTrigger(dropdown, function () {
 			            return window.location.href;
 			          });
+			          if (trigger) {
+			            //Remove the button injected next to the dropdown by an older version
+			            removeButtonAfter(dropdown);
+			          } else {
+			            //Fallback for a different Gerrit DOM: insert the button after the dropdown
+			            injectAfter(dropdown, function () {
+			              return window.location.href;
+			            });
+			          }
 			        })(dropdowns[j]);
 			      }
 			    }
